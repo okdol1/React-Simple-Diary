@@ -7,7 +7,6 @@ import DiaryList from "./DiaryList";
 
 function App() {
   const [data, setData] = useState([]);
-
   const dataId = useRef(0);
 
   const getData = async () => {
@@ -20,8 +19,8 @@ function App() {
         author: it.email,
         content: it.body,
         emotion: Math.floor(Math.random() * 5) + 1,
-        created_date: new Date().getTime(),
-        id: dataId.curent++,
+        created_date: new Date().getTime() + 1,
+        id: dataId.current++,
       };
     });
 
