@@ -46,18 +46,18 @@ function App() {
     // 이렇게 함수형업데이트를 하게되면 디펜덴싱 array를 비워도 항상 최신의 state를 인자를 통해서 참고할 수 있음
   }, []);
 
-  const onRemove = (targetId) => {
-    const newDiaryList = data.filter((it) => it.id !== targetId);
-    setData(newDiaryList);
-  };
+  const onRemove = useCallback((targetId) => {
+    // setData의 파라미터인 data의 최신 상태가 전달되는거기 때문에 최신 state를 이용하기 위해서는 인자부분에 넣어줘야함
+    setData((data) => data.filter((it) => it.id !== targetId));
+  }, []);
 
-  const onEdit = (targetId, newContent) => {
-    setData(
+  const onEdit = useCallback((targetId, newContent) => {
+    setData((data) =>
       data.map((it) =>
         it.id === targetId ? { ...it, content: newContent } : it
       )
     );
-  };
+  }, []);
 
   const getDiaryAnalysis = useMemo(() => {
     const goodCount = data.filter((it) => it.emotion >= 3).length;
