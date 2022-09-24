@@ -1,6 +1,10 @@
-import { useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react";
 
-const DiaryEditor = ({onCreate}) => {
+const DiaryEditor = ({ onCreate }) => {
+  useEffect(() => {
+    console.log("DiaryEditor 렌더");
+  });
+
   const authorInput = useRef();
   const contentInput = useRef();
 
@@ -8,57 +12,57 @@ const DiaryEditor = ({onCreate}) => {
     author: "",
     content: "",
     emotion: 1,
-  })
+  });
 
   const handleChangeState = (e) => {
     setState({
       ...state,
       [e.target.name]: e.target.value,
-    })
+    });
   };
 
   const handleSubmit = () => {
-    if(state.author.length < 1) {
+    if (state.author.length < 1) {
       authorInput.current.focus();
-      return
+      return;
     }
-    if(state.content.length < 5) {
+    if (state.content.length < 5) {
       contentInput.current.focus();
-      return
+      return;
     }
 
-    onCreate(state.author, state.content, state.emotion)
-    alert("저장 성공")
+    onCreate(state.author, state.content, state.emotion);
+    alert("저장 성공");
     setState({
       author: "",
       content: "",
       emotion: 1,
-    })
+    });
   };
 
   return (
     <div className="DiaryEditor">
       <h2>오늘의 일기</h2>
       <div>
-        <input 
+        <input
           ref={authorInput}
-          name="author" 
-          value={state.author} 
-          onChange={handleChangeState} 
+          name="author"
+          value={state.author}
+          onChange={handleChangeState}
         />
       </div>
       <div>
-        <textarea 
+        <textarea
           ref={contentInput}
           name="content"
           value={state.content}
-          onChange={handleChangeState} 
+          onChange={handleChangeState}
         />
       </div>
       <div>
-        <select 
-          name="emotion" 
-          value={state.emotion} 
+        <select
+          name="emotion"
+          value={state.emotion}
           onChange={handleChangeState}
         >
           <option value={1}>1</option>
@@ -75,4 +79,4 @@ const DiaryEditor = ({onCreate}) => {
   );
 };
 
-export default DiaryEditor;
+export default React.memo(DiaryEditor);
