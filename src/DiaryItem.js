@@ -1,13 +1,13 @@
-import { useState, useRef } from "react"
+import { useState, useRef } from "react";
 
-const DiaryItem = ({ 
+const DiaryItem = ({
   onRemove,
   onEdit,
-  author, 
-  content, 
-  created_date, 
-  emotion, 
-  id
+  author,
+  content,
+  created_date,
+  emotion,
+  id,
 }) => {
   const [isEdit, setIsEdit] = useState(false);
   const toggleIsEdit = () => setIsEdit(!isEdit);
@@ -16,27 +16,27 @@ const DiaryItem = ({
   const localContentInput = useRef();
 
   const handleRomove = () => {
-    if(window.confirm(`${id}번째 일기를 정말 삭제하시겠습니까?`)) {
-      onRemove(id)
+    if (window.confirm(`${id}번째 일기를 정말 삭제하시겠습니까?`)) {
+      onRemove(id);
     }
   };
 
   const handleQuitEdit = () => {
     setIsEdit(false);
     setLocalContent(content);
-  }
+  };
 
   const handleEdit = () => {
-    if(localContent.length < 5) {
+    if (localContent.length < 5) {
       localContentInput.current.focus();
       return;
     }
 
-    if(window.confirm(`${id}번 째 일기를 수정하시겠습니까?`)) {
-      onEdit(id, localContent)
+    if (window.confirm(`${id}번 째 일기를 수정하시겠습니까?`)) {
+      onEdit(id, localContent);
       toggleIsEdit();
     }
-  }
+  };
 
   return (
     <div className="DiaryItem">
@@ -45,17 +45,15 @@ const DiaryItem = ({
           작성자 : {author} | 감정점수 : {emotion}
         </span>
         <br />
-        <span className="date">
-          {new Date(created_date).toLocaleString()}
-        </span>
+        <span className="date">{new Date(created_date).toLocaleString()}</span>
       </div>
       <div className="content">
         {isEdit ? (
           <>
-            <textarea 
+            <textarea
               ref={localContentInput}
-              value={localContent} 
-              onChange={(e) => setLocalContent(e.target.value)} 
+              value={localContent}
+              onChange={(e) => setLocalContent(e.target.value)}
             />
           </>
         ) : (
@@ -74,9 +72,8 @@ const DiaryItem = ({
           <button onClick={toggleIsEdit}>수정하기</button>
         </>
       )}
-      
     </div>
-  )
+  );
 };
 
 export default DiaryItem;
