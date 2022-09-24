@@ -1,15 +1,20 @@
-import { useState, useRef } from 'react'
-import './App.css';
-import DiaryEditor from './DiaryEditor';
-import DiaryList from './DiaryList'
-import Lifecycle from './Lifecycle'
+import { useState, useRef } from "react";
+import "./App.css";
+import DiaryEditor from "./DiaryEditor";
+import DiaryList from "./DiaryList";
 
 // https://jsonplaceholder.typicode.com/comments
 
 function App() {
   const [data, setData] = useState([]);
 
-  const dataId = useRef(0)
+  const dataId = useRef(0);
+
+  const getData = async () => {
+    const res = await fetch(
+      "https://jsonplaceholder.typicode.com/comments"
+    ).then((res) => res.json());
+  };
 
   const onCreate = (author, content, emotion) => {
     const created_date = new Date().getTime();
@@ -18,29 +23,28 @@ function App() {
       content,
       emotion,
       created_date,
-      id: dataId.current
+      id: dataId.current,
     };
     dataId.current += 1;
     setData([newItem, ...data]);
   };
-  
+
   const onRemove = (targetId) => {
-    console.log(`${targetId}가 삭제되었습니다`)
+    console.log(`${targetId}가 삭제되었습니다`);
     const newDiaryList = data.filter((it) => it.id !== targetId);
-    setData(newDiaryList)
+    setData(newDiaryList);
   };
 
   const onEdit = (targetId, newContent) => {
     setData(
-      data.map((it) => 
-        it.id === targetId ? {...it, content: newContent} : it
+      data.map((it) =>
+        it.id === targetId ? { ...it, content: newContent } : it
       )
-    )
+    );
   };
 
   return (
     <div className="App">
-      <Lifecycle />
       <DiaryEditor onCreate={onCreate} />
       <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data} />
     </div>
