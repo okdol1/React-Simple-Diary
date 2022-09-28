@@ -1,4 +1,10 @@
-import { useReducer, useCallback, useMemo, useRef, useEffect } from "react";
+import React, {
+  useReducer,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
@@ -29,9 +35,13 @@ const reducer = (state, action) => {
   }
 };
 
-function App() {
-  // const [data, setData] = useState([]);
+// 1. Context 만들기 + 내보내기 export
+// 2. 공급자 만들고 데이터를 공급하기 -> App return에 provider로 묶기 <DiaryStateContext.Provider></DiaryStateContext.Provider>
+export const DiaryStateContext = React.createContext();
 
+export const DiaryDispatchContext = React.createContext();
+
+function App() {
   const [data, dispatch] = useReducer(reducer, []);
 
   const dataId = useRef(0);
@@ -63,7 +73,6 @@ function App() {
       type: "CREATE",
       data: { author, content, emotion, id: dataId.current },
     });
-
     dataId.current += 1;
   }, []);
 
@@ -73,6 +82,11 @@ function App() {
 
   const onEdit = useCallback((targetId, newContent) => {
     dispatch({ type: "EDIT", targetId, newContent });
+  }, []);
+
+  //useMemo를 활용하는 이유? -> app컴포넌트가 재생성될 때 재생성 되지 않도록(최적화가 풀리지 않게)
+  const memoizedDispatches = useMemo(() => {
+    return { onCreate, onRemove, onEdit };
   }, []);
 
   const getDiaryAnalysis = useMemo(() => {
@@ -90,14 +104,30 @@ function App() {
   const { goodCount, badCount, goodRatio } = getDiaryAnalysis;
 
   return (
-    <div className="App">
-      <DiaryEditor onCreate={onCreate} />
-      <div>전체 일기 : {data.length}</div>
-      <div>기분 좋은 일기 개수 : {goodCount}</div>
-      <div>기분 나쁜 일기 개수 : {badCount}</div>
-      <div>기분 좋은 일기 비율 : {goodRatio}%</div>
-      <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data} />
-    </div>
+    // 3. 공급자 컴포넌트로 래핑을 해주게되면 DiaryEditor, DiaryList 를 묶어줌(크롬-콘솔창-(리액트)Components로 확인해보기)
+    // 4. 데이터 공급하기 -> value prop으로 공급 내려주기
+
+    // 5. 공급은 끝, 이젠 Context 자식요소가 데이터를 사용하면됨
+    // 6. DiaryList 컴포넌트에 diaryList={data} 를 지워도 잘 작동함(컴포넌트에서 useContext로 데이터를 받았기 때문)
+
+    // * 여기서 DiaryStateContext에 onEdit, OnRemove, onCreate props을 value에 같이 내려주게되면
+    // data state가 바뀔때마다 리렌더링이 됨 -> 최적화 X
+    // * 이럴때 어떻게해야할까 ?
+    // 문맥 Context를 중첩으로 사용하면 됨 - > <DiaryDispatchContext.Provider></DiaryDispatchContext.Provider>
+    // * 이 Provider는 다시 렌더링될 이유가 없음 -> onEdit, OnRemove, onCreate 재생성되지 않는 함수들이기 때문
+
+    <DiaryStateContext.Provider value={data}>
+      <DiaryDispatchContext.Provider value={memoizedDispatches}>
+        <div className="App">
+          <DiaryEditor />
+          <div>전체 일기 : {data.length}</div>
+          <div>기분 좋은 일기 개수 : {goodCount}</div>
+          <div>기분 나쁜 일기 개수 : {badCount}</div>
+          <div>기분 좋은 일기 비율 : {goodRatio}%</div>
+          <DiaryList />
+        </div>
+      </DiaryDispatchContext.Provider>
+    </DiaryStateContext.Provider>
   );
 }
 
