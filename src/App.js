@@ -1,10 +1,39 @@
-import { useCallback, useMemo, useState, useRef, useEffect } from "react";
+import { useReducer, useCallback, useMemo, useRef, useEffect } from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "INIT": {
+      return action.data; //이렇게 리턴하면 새로운 state가 된다
+    }
+    case "CREATE": {
+      const created_date = new Date().getTime();
+      const newItem = {
+        ...action.data,
+        created_date,
+      };
+      return [newItem, ...state];
+    }
+    case "REMOVE": {
+      return state.filter((it) => it.id !== action.targetId);
+    }
+    case "EDIT": {
+      return state.map((it) =>
+        it.id === action.targetId ? { ...it, content: action.newContent } : it
+      );
+    }
+    default:
+      return state;
+  }
+};
+
 function App() {
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]);
+
+  const [data, dispatch] = useReducer(reducer, []);
+
   const dataId = useRef(0);
 
   const getData = async () => {
@@ -22,7 +51,7 @@ function App() {
       };
     });
 
-    setData(initData);
+    dispatch({ type: "INIT", data: initData });
   };
 
   useEffect(() => {
@@ -30,33 +59,20 @@ function App() {
   }, []);
 
   const onCreate = useCallback((author, content, emotion) => {
-    const created_date = new Date().getTime();
-    const newItem = {
-      author,
-      content,
-      emotion,
-      created_date,
-      id: dataId.current,
-    };
-    dataId.current += 1;
-    // setData([newItem, ...data]);
-    // 위처럼 상태변경을 하면 뉴아이템 제외하고 나머지 데이터가 사라짐
+    dispatch({
+      type: "CREATE",
+      data: { author, content, emotion, id: dataId.current },
+    });
 
-    setData((data) => [newItem, ...data]);
-    // 이렇게 함수형업데이트를 하게되면 디펜덴싱 array를 비워도 항상 최신의 state를 인자를 통해서 참고할 수 있음
+    dataId.current += 1;
   }, []);
 
   const onRemove = useCallback((targetId) => {
-    // setData의 파라미터인 data의 최신 상태가 전달되는거기 때문에 최신 state를 이용하기 위해서는 인자부분에 넣어줘야함
-    setData((data) => data.filter((it) => it.id !== targetId));
+    dispatch({ type: "REMOVE", targetId });
   }, []);
 
   const onEdit = useCallback((targetId, newContent) => {
-    setData((data) =>
-      data.map((it) =>
-        it.id === targetId ? { ...it, content: newContent } : it
-      )
-    );
+    dispatch({ type: "EDIT", targetId, newContent });
   }, []);
 
   const getDiaryAnalysis = useMemo(() => {
